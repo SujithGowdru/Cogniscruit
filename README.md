@@ -54,7 +54,7 @@ Interviewers often need to research a candidate’s background and formulate rel
 |-----------------------|----------|---------|-----|--------|---------|---------------|-------|
 | Raashil Aadhyanth     | ✓        |         | ✓   |        |         |               | ✓     |
 | Jonathan Guan         |          |         | ✓   |        | ✓       |               |       |
-| Sujith Venkatesh      | ✓        |         |     | ✓      |         |               |       |
+| Sujith Gowdru         | ✓        |         | ✓   | ✓      |         |               |       |
 | Ross Carvalho         |          | ✓       | ✓   |        |         |               |       |
 | Reshma Ramakumar      |          | ✓       |     | ✓      |         |               |       |
 | Hui Zhang             |          |         | ✓   |        |         |               |       |
