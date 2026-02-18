@@ -1,19 +1,64 @@
 import redis
 import json
-from tasks import process_job
-from dotenv import load_dotenv
-import json 
 import os
+from google import genai
+from dotenv import load_dotenv
+from task import generate_prompt
+from mongo_service import update_job_status,update_job_fields
+from config import REDIS_HOST,REDIS_PORT,REDIS_QUEUE,GEMINI_API_KEY
 
-load_dotenv()
 
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-REDIS_QUEUE = os.getenv("REDIS_QUEUE", "job_queue")
-
+# Initialize Redis client
 redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 
+# Configure Gemini API
+
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY environment variable not set.")
+
+client = genai.Client(api_key=GEMINI_API_KEY)
+
+# Function to generate text using Gemini
+def generate_text(prompt: str) -> str:
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash", contents=prompt
+        )
+        print(response.text)
+        return response.text
+    except Exception as e:
+        print(f"Error generating text with Gemini: {e}")
+        return ""
+
+print("Worker created ::::")
+
+# Start processing the Redis queue
 while True:
-    _, job_data = redis_client.blpop(REDIS_QUEUE)
-    job = json.loads(job_data)
-    process_job(job)
+    try:
+        # Read job from Redis queue (Uncomment this when using Redis)
+        _, job_data = redis_client.blpop(REDIS_QUEUE)
+        job = json.loads(job_data)
+        print(job)
+
+        update_job_status(job['email'], job['job_id'], "InProgress")
+
+        # For this example, we will use a static prompt
+        # prompt = "Provide an interview question related to data engineering with a focus on database management."
+
+        # # Call Gemini to generate the response
+        prompt = generate_prompt(job)
+        print(prompt)
+        generate_answer="bcjbdjcbdsjc"
+        #generate_answer = generate_text(prompt)
+        
+        # # Print the generated question
+        print(f"Generated question (Gemini): {generate_answer}")
+
+        update_job_fields(job['email'], job['job_id'] ,"Completed", generate_answer )
+
+
+        # For testing purposes, break after the first job
+  
+    except Exception as e:
+        print("Error:", e)
+
