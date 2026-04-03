@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: interviewgen
+
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    ports:
+      - "5050:5050"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_QUEUE=job_queue
+      - MONGO_URI=mongodb://mongodb:27017
+    depends_on:
+      - redis
+      - mongodb
+
+  worker:
+    build:
+      context: ./worker
+    container_name: worker
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_QUEUE=job_queue
+      - MONGO_URI=mongodb://mongodb:27017
+    depends_on:
+      - redis
+      - mongodb
